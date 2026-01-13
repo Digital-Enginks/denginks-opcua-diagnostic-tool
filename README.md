@@ -1,15 +1,15 @@
 # DENGINKS OPC-UA Diagnostic Tool
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/DigitalEnginks/opcua-diagnostic-tool/rust.yml?style=for-the-badge)](https://github.com/DigitalEnginks/opcua-diagnostic-tool/actions)
-[![License](https://img.shields.io/github/license/DigitalEnginks/opcua-diagnostic-tool?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/github/v/release/DigitalEnginks/opcua-diagnostic-tool?style=for-the-badge)](https://github.com/DigitalEnginks/opcua-diagnostic-tool/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Digital-Enginks/denginks-opcua-diagnostic-tool/rust.yml?style=for-the-badge)](https://github.com/Digital-Enginks/denginks-opcua-diagnostic-tool/actions)
+[![License](https://img.shields.io/github/license/Digital-Enginks/denginks-opcua-diagnostic-tool?style=for-the-badge)](LICENSE)
+[![Version](https://img.shields.io/github/v/release/Digital-Enginks/denginks-opcua-diagnostic-tool?style=for-the-badge)](https://github.com/Digital-Enginks/denginks-opcua-diagnostic-tool/releases)
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange?style=for-the-badge&logo=rust)](https://www.rust-lang.org)
 
 Welcome to **DENGINKS OPC-UA Diagnostic Tool**! 🚀
 
 A lightweight, portable, **read-only** OPC-UA Client designed for diagnostics, structural exporting, and data monitoring without the risk of accidentally modifying server data.
 
-![Aesthetic Dashboard](https://raw.githubusercontent.com/DigitalEnginks/opcua-diagnostic-tool/main/assets/screenshot.png)
+![Aesthetic Dashboard](https://raw.githubusercontent.com/Digital-Enginks/denginks-opcua-diagnostic-tool/main/assets/screenshot.png)
 
 ## Features
 
