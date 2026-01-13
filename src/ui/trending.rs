@@ -1,6 +1,6 @@
-//! Trending chart for real-time data visualization
-//!
-//! Provides a line chart display for selected monitored items.
+
+
+
 
 use eframe::egui;
 use egui_plot::{Line, Legend, Plot, PlotPoints, AxisHints};
@@ -10,12 +10,12 @@ use std::hash::{Hash, Hasher};
 
 use crate::opcua::subscription::MonitoredData;
 
-/// Time window options in seconds
+
 const TIME_WINDOWS: [u64; 4] = [30, 60, 300, 600];
 
-/// Trending panel state
+
 pub struct TrendingPanel {
-    /// Selected time window in seconds
+    
     time_window: u64,
 }
 
@@ -27,23 +27,23 @@ impl Default for TrendingPanel {
     }
 }
 
-/// Generate a consistent color for a NodeId (based on hash of string representation)
-/// This ensures each variable has a unique color even if display names are the same
+
+
 pub fn color_for_node_id(node_id: &NodeId) -> egui::Color32 {
     let node_str = node_id.to_string();
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     node_str.hash(&mut hasher);
     let hash = hasher.finish();
     
-    // Use the hash to generate HSV values with good separation
+    
     let hue = (hash % 360) as f32 / 360.0;
-    let saturation = 0.7 + (((hash >> 8) % 30) as f32 / 100.0); // 0.7-1.0
-    let value = 0.8 + (((hash >> 16) % 20) as f32 / 100.0); // 0.8-1.0
+    let saturation = 0.7 + (((hash >> 8) % 30) as f32 / 100.0); 
+    let value = 0.8 + (((hash >> 16) % 20) as f32 / 100.0); 
     
     egui::Color32::from(egui::ecolor::Hsva::new(hue, saturation, value, 1.0))
 }
 
-/// Format a Unix timestamp as HH:MM:SS
+
 fn format_time(timestamp: f64) -> String {
     use std::time::{UNIX_EPOCH, Duration};
     
@@ -61,7 +61,7 @@ fn format_time(timestamp: f64) -> String {
 }
 
 impl TrendingPanel {
-    /// Show the trending panel
+    
     pub fn show(
         &mut self,
         ui: &mut egui::Ui,
@@ -70,7 +70,7 @@ impl TrendingPanel {
         ui.horizontal(|ui| {
             ui.heading("📈 Live Trend");
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                // Time window selector
+                
                 egui::ComboBox::from_id_salt("time_window")
                     .selected_text(format!("Window: {}s", self.time_window))
                     .show_ui(ui, |ui| {
@@ -83,7 +83,7 @@ impl TrendingPanel {
         
         ui.separator();
 
-        // Prepare plot lines
+        
         let current_time = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_secs_f64())
@@ -91,17 +91,17 @@ impl TrendingPanel {
 
         let min_time = current_time - self.time_window as f64;
         
-        // Custom X-axis formatter for human-readable time
+        
         let x_fmt = |mark: egui_plot::GridMark, _range: &std::ops::RangeInclusive<f64>| {
             format_time(mark.value)
         };
         
-        // Count how many items will be shown in trend
+        
         let trending_items: Vec<_> = monitored_items.iter()
             .filter(|(_, item)| item.show_in_trend && item.is_trendable() && !item.history.is_empty())
             .collect();
         
-        // Plot logic
+        
         Plot::new("trend_plot")
             .legend(Legend::default())
             .x_axis_label("Time")
@@ -111,14 +111,14 @@ impl TrendingPanel {
             .include_x(min_time)
             .show(ui, |plot_ui| {
                 for (node_id, item) in &trending_items {
-                    // Convert history to plot points, filtering by time window
+                    
                     let points: PlotPoints = item.history
                         .iter()
                         .filter(|(t, _)| *t >= min_time)
                         .map(|(t, v)| [*t, *v])
                         .collect();
 
-                    // Use custom color if set, otherwise generate from node_id
+                    
                     let color = if let Some(rgb) = item.trend_color {
                         egui::Color32::from_rgb(rgb[0], rgb[1], rgb[2])
                     } else {
@@ -134,7 +134,7 @@ impl TrendingPanel {
                 }
             });
             
-        // If no items are selected for trending, show a hint
+        
         if trending_items.is_empty() {
             ui.centered_and_justified(|ui| {
                 ui.label("Select numeric items in the Watchlist (📈) to visualize them here.\nNote: Dates and strings cannot be graphed.");

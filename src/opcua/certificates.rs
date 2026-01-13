@@ -1,23 +1,23 @@
-//! Certificate management for OPC-UA connections
-//!
-//! Handles PKI directory structure and certificate trust management.
+
+
+
 
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 use std::fs;
 
-/// Certificate manager for OPC-UA PKI operations
+
 pub struct CertificateManager {
-    /// Root PKI directory (next to executable)
+    
     pki_dir: PathBuf,
-    /// Path to trusted server certificates directory
+    
     trusted_certs_dir: PathBuf,
-    /// Path to rejected certificates directory
+    
     rejected_certs_dir: PathBuf,
 }
 
 impl CertificateManager {
-    /// Create a new certificate manager with PKI directory next to executable
+    
     pub fn new() -> Result<Self> {
         let exe_dir = std::env::current_exe()
             .context("Failed to get executable path")?
@@ -36,19 +36,19 @@ impl CertificateManager {
         })
     }
 
-    /// Get the PKI directory path
+    
     pub fn pki_directory(&self) -> &Path {
         &self.pki_dir
     }
 
 
-    /// Ensure PKI directory structure exists
+    
     pub fn ensure_pki_structure(&self) -> Result<()> {
-        // Create directory structure:
-        // pki/
-        //   own/           - Client certificate and key (created by async-opcua)
-        //   trusted/certs/ - Trusted server certificates  
-        //   rejected/certs/ - Rejected certificates
+        
+        
+        
+        
+        
         
         let dirs = [
             self.pki_dir.join("own"),
@@ -68,7 +68,7 @@ impl CertificateManager {
         Ok(())
     }
 
-    /// List certificate files in a directory
+    
     fn list_certs_in_dir(dir: &Path) -> Vec<CertificateInfo> {
         if !dir.exists() {
             return Vec::new();
@@ -95,21 +95,21 @@ impl CertificateManager {
             .unwrap_or_default()
     }
 
-    /// List trusted server certificates
+    
     pub fn list_trusted_certs(&self) -> Vec<CertificateInfo> {
         Self::list_certs_in_dir(&self.trusted_certs_dir)
     }
 
-    /// List rejected certificates
+    
     pub fn list_rejected_certs(&self) -> Vec<CertificateInfo> {
         Self::list_certs_in_dir(&self.rejected_certs_dir)
     }
 
-    /// Get client certificate path if it exists
+    
     pub fn get_client_cert(&self) -> Option<CertificateInfo> {
         let own_dir = self.pki_dir.join("own");
         if own_dir.exists() {
-            // Look for cert.der or similar
+            
             for name in ["cert.der", "client.der", "cert.pem", "client.pem"] {
                 let path = own_dir.join(name);
                 if path.exists() {
@@ -123,7 +123,7 @@ impl CertificateManager {
         None
     }
 
-    /// Trust a rejected certificate (move from rejected to trusted)
+    
     pub fn trust_certificate(&self, cert_path: &Path) -> Result<()> {
         if !cert_path.exists() {
             anyhow::bail!("Certificate file not found: {:?}", cert_path);
@@ -140,7 +140,7 @@ impl CertificateManager {
         Ok(())
     }
 
-    /// Delete a certificate file
+    
     pub fn delete_certificate(&self, cert_path: &Path) -> Result<()> {
         if !cert_path.exists() {
             anyhow::bail!("Certificate file not found: {:?}", cert_path);
@@ -153,7 +153,7 @@ impl CertificateManager {
         Ok(())
     }
 
-    /// Open the PKI folder in the system file explorer
+    
     #[cfg(target_os = "windows")]
     pub fn open_pki_folder(&self) -> Result<()> {
         std::process::Command::new("explorer")
@@ -173,12 +173,12 @@ impl CertificateManager {
     }
 }
 
-/// Certificate info for UI display
+
 #[derive(Debug, Clone)]
 pub struct CertificateInfo {
-    /// Full path to the certificate file
+    
     pub path: PathBuf,
-    /// File name
+    
     pub name: String,
 }
 

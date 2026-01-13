@@ -1,6 +1,6 @@
-//! Node browsing functionality
-//!
-//! Provides Browse service operations to navigate the OPC-UA address space.
+
+
+
 
 use anyhow::{Context, Result};
 use std::sync::Arc;
@@ -11,24 +11,24 @@ use opcua::types::{
     NodeId, ReferenceTypeId,
 };
 
-/// Information about a browsed node
+
 #[derive(Debug, Clone)]
 pub struct BrowsedNode {
-    /// The NodeId of this node
+    
     pub node_id: NodeId,
-    /// The browse name (namespace:name)
+    
     pub browse_name: String,
-    /// The display name (human-readable)
+    
     pub display_name: String,
-    /// The node class (Object, Variable, Method, etc.)
+    
     pub node_class: NodeClass,
-    /// Type definition node ID (if applicable)
+    
     pub type_definition: Option<NodeId>,
-    /// Whether this node has children (for lazy loading)
+    
     pub has_children: bool,
 }
 
-/// OPC-UA Node Classes
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum NodeClass {
     Object,
@@ -43,7 +43,7 @@ pub enum NodeClass {
 }
 
 impl NodeClass {
-    /// Get an icon string for the node class
+    
     pub fn icon(&self) -> &'static str {
         match self {
             NodeClass::Object => "📁",
@@ -91,21 +91,21 @@ impl std::fmt::Display for NodeClass {
 }
 
 
-/// Browse a specific node and return its children
+
 pub async fn browse_node(session: Arc<Session>, parent_node_id: &NodeId) -> Result<Vec<BrowsedNode>> {
     tracing::debug!("Browsing node: {:?}", parent_node_id);
 
-    // Create browse description
+    
     let browse_description = BrowseDescription {
         node_id: parent_node_id.clone(),
         browse_direction: BrowseDirection::Forward,
         reference_type_id: ReferenceTypeId::HierarchicalReferences.into(),
         include_subtypes: true,
-        node_class_mask: 0xFF, // All node classes
+        node_class_mask: 0xFF, 
         result_mask: BrowseResultMask::All as u32,
     };
 
-    // Perform browse with max references and no view
+    
     let browse_result = session
         .browse(&[browse_description], 0, None)
         .await
@@ -117,12 +117,12 @@ pub async fn browse_node(session: Arc<Session>, parent_node_id: &NodeId) -> Resu
 
     let result = &browse_result[0];
 
-    // Check status code
+    
     if !result.status_code.is_good() {
         anyhow::bail!("Browse failed with status: {:?}", result.status_code);
     }
 
-    // Convert references to BrowsedNode
+    
     let nodes: Vec<BrowsedNode> = result
         .references
         .as_ref()

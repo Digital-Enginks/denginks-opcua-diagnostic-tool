@@ -1,4 +1,4 @@
-//! UI components module
+
 
 pub mod connection;
 pub mod dialogs;

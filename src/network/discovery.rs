@@ -1,46 +1,46 @@
-//! OPC-UA endpoint discovery
-//!
-//! Uses the OPC-UA GetEndpoints service to discover available
-//! security policies and connection options.
+
+
+
+
 
 use opcua::client::ClientBuilder;
 use opcua::types::MessageSecurityMode as OpcMessageSecurityMode;
 use crate::utils::i18n::{self, T, Language};
 
-/// Information about a discovered endpoint
+
 #[derive(Debug, Clone)]
 pub struct EndpointInfo {
-    /// Security policy display name
+    
     pub security_policy_name: String,
-    /// Security mode (None, Sign, SignAndEncrypt)
+    
     pub security_mode: String,
-    /// Server certificate (if present)
+    
     pub has_certificate: bool,
-    /// User identity tokens supported
+    
     pub user_tokens: Vec<String>,
-    /// The actual endpoint URL returned by the server
+    
     pub endpoint_url: String,
 }
 
 impl EndpointInfo {
-    /// Check if this endpoint allows anonymous access
+    
     pub fn allows_anonymous(&self) -> bool {
         self.user_tokens.iter().any(|t| t.to_lowercase().contains("anonymous"))
     }
 }
 
-/// Discover available endpoints from an OPC-UA server
+
 pub async fn discover_endpoints(discovery_url: &str) -> Result<Vec<EndpointInfo>, String> {
     tracing::info!("Discovering endpoints at {}", discovery_url);
     
-    // Create a temporary client for discovery
+    
     let client = ClientBuilder::new()
         .application_name("DengInks OPC-UA Discovery")
         .application_uri("urn:DengInks:OpcUaDiagnostic:Discovery")
         .client()
         .map_err(|e| format!("Failed to create discovery client: {:?}", e))?;
 
-    // Get endpoints from server
+    
     let endpoints = client
         .get_server_endpoints_from_url(discovery_url)
         .await
@@ -52,15 +52,15 @@ pub async fn discover_endpoints(discovery_url: &str) -> Result<Vec<EndpointInfo>
 
     tracing::info!("Discovered {} endpoints", endpoints.len());
 
-    // Convert to our EndpointInfo type
+    
     let endpoint_infos: Vec<EndpointInfo> = endpoints
         .into_iter()
         .map(|ep| {
-            // Parse security policy from URI
+            
             let policy_uri = ep.security_policy_uri.as_ref().to_string();
             let policy_name = parse_security_policy_name(&policy_uri);
 
-            // Parse security mode
+            
             let mode_str = match ep.security_mode {
                 OpcMessageSecurityMode::None => "None",
                 OpcMessageSecurityMode::Sign => "Sign",
@@ -68,7 +68,7 @@ pub async fn discover_endpoints(discovery_url: &str) -> Result<Vec<EndpointInfo>
                 _ => "Unknown",
             };
 
-            // Parse user identity tokens
+            
             let user_tokens: Vec<String> = ep
                 .user_identity_tokens
                 .as_ref()
@@ -89,7 +89,7 @@ pub async fn discover_endpoints(discovery_url: &str) -> Result<Vec<EndpointInfo>
                 })
                 .unwrap_or_default();
 
-            // Check if server has a certificate
+            
             let has_certificate = !ep.server_certificate.is_null();
 
             EndpointInfo {
@@ -105,9 +105,9 @@ pub async fn discover_endpoints(discovery_url: &str) -> Result<Vec<EndpointInfo>
     Ok(endpoint_infos)
 }
 
-/// Parse the security policy name from the URI
+
 fn parse_security_policy_name(uri: &str) -> String {
-    // URIs look like: http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256
+    
     if let Some(hash_pos) = uri.rfind('#') {
         uri[hash_pos + 1..].to_string()
     } else if let Some(slash_pos) = uri.rfind('/') {
@@ -120,7 +120,7 @@ fn parse_security_policy_name(uri: &str) -> String {
 }
 
 impl EndpointInfo {
-    /// Get a display string for an endpoint
+    
     pub fn display_name(&self, lang: Language) -> String {
         let cert_icon = if self.has_certificate { "🔐" } else { "⚠️" };
         let auth_str = if self.allows_anonymous() {

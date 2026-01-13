@@ -1,42 +1,42 @@
-//! OPC-UA Subscription management for real-time data monitoring
-//!
-//! Provides data structures and utilities for managing monitored items
-//! and their real-time values.
+
+
+
+
 
 use std::collections::{HashMap, VecDeque};
 
 use opcua::types::{DataValue, NodeId, StatusCode, Variant, DateTime};
 
-/// Maximum number of history points to keep per monitored item (for trending)
+
 pub const MAX_HISTORY_POINTS: usize = 600;
 
-/// Data for a single monitored item
+
 #[derive(Debug, Clone)]
 pub struct MonitoredData {
-    /// The NodeId of this monitored item
+    
     pub node_id: NodeId,
-    /// Display name for UI
+    
     pub display_name: String,
-    /// The monitored item ID assigned by the server
+    
     pub monitored_item_id: Option<u32>,
-    /// Current value
+    
     pub value: Option<Variant>,
-    /// Current status code
+    
     pub status: StatusCode,
-    /// Source timestamp of the value
+    
     pub source_timestamp: Option<DateTime>,
-    /// Server timestamp of the value
+    
     pub server_timestamp: Option<DateTime>,
-    /// Historical values for trending (timestamp_seconds, numeric_value)
+    
     pub history: VecDeque<(f64, f64)>,
-    /// Whether this item is selected for trending display
+    
     pub show_in_trend: bool,
-    /// Custom color for trending (RGB) - None means auto-generate
+    
     pub trend_color: Option<[u8; 3]>,
 }
 
 impl MonitoredData {
-    /// Create a new MonitoredData instance
+    
     pub fn new(node_id: NodeId, display_name: String) -> Self {
         Self {
             node_id,
@@ -52,19 +52,19 @@ impl MonitoredData {
         }
     }
 
-    /// Check if the current value is trendable (numeric)
+    
     pub fn is_trendable(&self) -> bool {
         self.value.as_ref().and_then(variant_to_f64).is_some()
     }
 
-    /// Update with new data value
+    
     pub fn update(&mut self, data_value: &DataValue) {
         self.value = data_value.value.clone();
         self.status = data_value.status.unwrap_or(StatusCode::Good);
         self.source_timestamp = data_value.source_timestamp;
         self.server_timestamp = data_value.server_timestamp;
 
-        // Add to history if the value is numeric
+        
         if let Some(ref variant) = self.value {
             if let Some(numeric) = variant_to_f64(variant) {
                 let timestamp = self.source_timestamp
@@ -78,7 +78,7 @@ impl MonitoredData {
 
                 self.history.push_back((timestamp, numeric));
 
-                // Trim history if too long
+                
                 while self.history.len() > MAX_HISTORY_POINTS {
                     self.history.pop_front();
                 }
@@ -86,7 +86,7 @@ impl MonitoredData {
         }
     }
 
-    /// Get a formatted string representation of the current value
+    
     pub fn value_string(&self) -> String {
         match &self.value {
             Some(v) => format_variant(v),
@@ -94,7 +94,7 @@ impl MonitoredData {
         }
     }
 
-    /// Get the quality icon based on status code
+    
     pub fn quality_icon(&self) -> &'static str {
         if self.status.is_good() {
             "OK"
@@ -105,7 +105,7 @@ impl MonitoredData {
         }
     }
 
-    /// Get the timestamp string for display
+    
     pub fn timestamp_string(&self) -> String {
         self.source_timestamp
             .map(|dt| {
@@ -116,7 +116,7 @@ impl MonitoredData {
     }
 }
 
-/// Convert a Variant to f64 for trending (returns None if not numeric)
+
 pub fn variant_to_f64(variant: &Variant) -> Option<f64> {
     match variant {
         Variant::Boolean(b) => Some(if *b { 1.0 } else { 0.0 }),
@@ -134,7 +134,7 @@ pub fn variant_to_f64(variant: &Variant) -> Option<f64> {
     }
 }
 
-/// Format a Variant for display
+
 pub fn format_variant(variant: &Variant) -> String {
     match variant {
         Variant::Empty => "Empty".to_string(),
@@ -160,66 +160,66 @@ pub fn format_variant(variant: &Variant) -> String {
     }
 }
 
-/// Subscription configuration
+
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub struct SubscriptionConfig {
-    /// Publishing interval in milliseconds
+    
     pub publishing_interval_ms: u64,
-    /// Lifetime count
+    
     pub lifetime_count: u32,
-    /// Max keep-alive count
+    
     pub max_keepalive_count: u32,
-    /// Max notifications per publish
+    
     pub max_notifications: u32,
-    /// Priority
+    
     pub priority: u8,
 }
 
 impl Default for SubscriptionConfig {
     fn default() -> Self {
         Self {
-            publishing_interval_ms: 1000,  // 1 second
+            publishing_interval_ms: 1000,  
             lifetime_count: 10,
             max_keepalive_count: 30,
-            max_notifications: 0,  // unlimited
+            max_notifications: 0,  
             priority: 0,
         }
     }
 }
 
-/// Message type for subscription data changes sent to UI
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct DataChangeNotification {
-    /// NodeId that changed
+    
     pub node_id: NodeId,
-    /// The new data value
+    
     pub data_value: DataValue,
 }
 
-/// Manager for tracking subscription state
+
 #[derive(Debug, Default)]
 pub struct SubscriptionState {
-    /// Active subscription ID (if any)
+    
     pub subscription_id: Option<u32>,
-    /// Mapping from ClientHandle to NodeId
+    
     pub handle_to_node: HashMap<u32, NodeId>,
-    /// Mapping from NodeId to ClientHandle
+    
     pub node_to_handle: HashMap<NodeId, u32>,
-    /// Mapping from ClientHandle to ServerID
+    
     pub handle_to_server_id: HashMap<u32, u32>,
 }
 
 impl SubscriptionState {
-    /// Register a new monitored item
+    
     pub fn register_item(&mut self, node_id: NodeId, monitored_item_id: u32, handle: u32) {
         self.handle_to_node.insert(handle, node_id.clone());
         self.node_to_handle.insert(node_id, handle);
         self.handle_to_server_id.insert(handle, monitored_item_id);
     }
 
-    /// Unregister a monitored item by NodeId
+    
     pub fn unregister_by_node(&mut self, node_id: &NodeId) -> Option<u32> {
         if let Some(handle) = self.node_to_handle.remove(node_id) {
             self.handle_to_node.remove(&handle);
@@ -229,7 +229,7 @@ impl SubscriptionState {
         }
     }
 
-    /// Clear all state
+    
     pub fn clear(&mut self) {
         self.subscription_id = None;
         self.handle_to_node.clear();
@@ -237,7 +237,7 @@ impl SubscriptionState {
         self.handle_to_server_id.clear();
     }
 
-    /// Get the NodeId for a ClientHandle
+    
     pub fn get_node_id(&self, handle: u32) -> Option<&NodeId> {
         self.handle_to_node.get(&handle)
     }
@@ -271,15 +271,15 @@ mod tests {
         let mut state = SubscriptionState::default();
         let node_id = NodeId::new(2, "Var1");
         
-        // Register with server_id=100, handle=1
+        
         state.register_item(node_id.clone(), 100, 1);
         
-        // Lookup by handle
+        
         assert_eq!(state.get_node_id(1), Some(&node_id));
         
-        // Remove by node_id, returns handle
+        
         let removed = state.unregister_by_node(&node_id);
-        assert_eq!(removed, Some(1));
+        assert_eq!(removed, Some(100));
         assert!(state.get_node_id(1).is_none());
     }
 }

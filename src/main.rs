@@ -1,34 +1,28 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-//! DENGINKS OPC-UA Diagnostic Tool
-//!
-//! A lightweight, portable, read-only OPC UA Client for diagnostics,
-//! structural exporting, and data monitoring.
-//!
-//! ## Graphics Compatibility
-//! This application prioritizes maximum compatibility for Windows Server 2012 R2+
-//! by using glow (OpenGL) renderer with automatic fallback to wgpu (DirectX/Vulkan).
-//!
-//! For systems without hardware graphics acceleration, place `opengl32.dll` from
-//! Mesa3D (softpipe) in the same directory as the executable.
 
-mod app;
-mod config;
-mod export;
-mod network;
-mod opcua;
-mod ui;
-mod utils;
+
+
+
+
+
+
+
+
+
+
+
+use denginks_opcua_diagnostic::app;
 
 use anyhow::Result;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 fn main() -> Result<()> {
-    // Initialize file logging
+    
     let file_appender = tracing_appender::rolling::never(".", "diagnostic.log");
     let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
-    // Initialize tracing
+    
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer().with_writer(non_blocking))
         .with(tracing_subscriber::EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
@@ -36,34 +30,34 @@ fn main() -> Result<()> {
 
     tracing::info!("Starting DENGINKS OPC-UA Diagnostic Tool");
 
-    // Install panic hook to log panics
+    
     let next = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         tracing::error!("Application panic: {}", info);
         next(info);
     }));
 
-    // Create tokio runtime for async operations
+    
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?;
 
-    // Check if Mesa3D opengl32.dll exists in the same directory as the executable
+    
     let mesa_dll_exists = check_mesa_dll();
     
     if mesa_dll_exists {
         tracing::info!("Mesa3D opengl32.dll detected - using glow (software OpenGL) renderer");
-        // Use glow directly when Mesa3D is available for guaranteed software rendering
+        
         return run_with_renderer(runtime.handle().clone(), eframe::Renderer::Glow);
     }
 
-    // Try renderers in order of compatibility
-    // 1. First try wgpu (DirectX 12/Vulkan) - works on modern systems
-    // 2. Fallback to glow (OpenGL) - works if OpenGL 2.0+ is available
+    
+    
+    
     
     tracing::info!("Attempting to start with wgpu renderer (DirectX 12 / Vulkan)");
     
-    // Configure wgpu for maximum Windows compatibility
+    
     if std::env::var("WGPU_BACKEND").is_err() {
         std::env::set_var("WGPU_BACKEND", "dx12");
     }
@@ -76,7 +70,7 @@ fn main() -> Result<()> {
     if let Err(wgpu_err) = wgpu_result {
         tracing::warn!("wgpu renderer failed: {}. Trying glow (OpenGL) fallback...", wgpu_err);
         
-        // Try glow (OpenGL) fallback
+        
         tracing::info!("Attempting to start with glow renderer (OpenGL)");
         let glow_result = run_with_renderer(runtime.handle().clone(), eframe::Renderer::Glow);
         
@@ -178,7 +172,7 @@ fn show_graphics_error(wgpu_err: &str, glow_err: &str) {
         SOLUCIÓN:\n\
         Descargue opengl32.dll de Mesa3D y colóquelo en la\n\
         misma carpeta que el ejecutable.\n\n\
-        Mesa3D: https://fdossena.com/?p=mesa/index.fxml\n\
+        Mesa3D: https:
         (Descargar versión x64, extraer opengl32.dll)",
         truncate_error(wgpu_err, 50),
         truncate_error(glow_err, 50)

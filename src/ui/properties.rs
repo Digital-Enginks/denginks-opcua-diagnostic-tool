@@ -2,12 +2,12 @@ use eframe::egui;
 use crate::opcua::browser::{BrowsedNode, NodeClass};
 use crate::utils::i18n::{self, T, Language};
 
-/// Actions triggered from properties panel
+
 pub enum PropertiesAction {
     AddToWatchlist(BrowsedNode),
 }
 
-/// Properties panel component
+
 pub struct PropertiesPanel<'a> {
     selected_node: &'a Option<BrowsedNode>,
     monitored_data: Option<&'a crate::opcua::subscription::MonitoredData>,
@@ -32,7 +32,7 @@ impl<'a> PropertiesPanel<'a> {
                 .spacing([10.0, 4.0])
                 .striped(true)
                 .show(ui, |ui| {
-                    // Basic Attributes
+                    
                     ui.label(format!("{} ", i18n::t(T::DisplayName, lang)));
                     ui.label(&node.display_name);
                     ui.end_row();
@@ -63,7 +63,7 @@ impl<'a> PropertiesPanel<'a> {
                         ui.end_row();
                     }
 
-                    // Live Data (if monitored)
+                    
                     if let Some(data) = self.monitored_data {
                         ui.label(format!("{} ", i18n::t(T::Value, lang)));
                         ui.label(egui::RichText::new(data.value_string()).strong());
@@ -77,7 +77,7 @@ impl<'a> PropertiesPanel<'a> {
 
             ui.add_space(20.0);
             
-            // Actions for Variables
+            
             if node.node_class == NodeClass::Variable {
                 ui.separator();
                 ui.heading(i18n::t(T::Actions, lang));

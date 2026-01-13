@@ -1,6 +1,6 @@
-//! Connection manager panel UI
-//!
-//! Provides the connection panel with diagnostic, endpoint discovery, and security configuration.
+
+
+
 
 use eframe::egui;
 use std::sync::mpsc;
@@ -14,7 +14,7 @@ use crate::opcua::client::ClientConfig;
 use crate::opcua::certificates::CertificateManager;
 use crate::utils::i18n::{self, T, Language};
 
-/// Actions requested by the connection panel
+
 pub enum ConnectionAction {
     Connect(ClientConfig),
     Disconnect,
@@ -22,40 +22,40 @@ pub enum ConnectionAction {
     CancelDiagnostic,
 }
 
-/// Connection panel state
+
 pub struct ConnectionPanel {
-    /// Server input (IP, hostname, or URL)
+    
     server_input: String,
-    /// Selected security policy
+    
     security_policy: SecurityPolicy,
-    /// Selected message security mode  
+    
     security_mode: MessageSecurityMode,
-    /// Use authentication
+    
     use_auth: bool,
-    /// Username for authentication
+    
     username: String,
-    /// Password for authentication
+    
     password: String,
-    /// Bookmark name for saving
+    
     bookmark_name: String,
-    /// Show add bookmark dialog
+    
     show_add_bookmark: bool,
 
-    /// Is currently connecting
+    
     is_connecting: bool,
     
-    // Diagnostic state
-    /// Is running diagnostic
+    
+    
     is_diagnosing: bool,
-    /// Diagnostic log entries
+    
     diagnostic_log: Vec<DiagnosticStep>,
-    /// Diagnostic result
+    
     diagnostic_result: Option<DiagnosticResult>,
-    /// Discovered endpoints from diagnostic
+    
     discovered_endpoints: Vec<EndpointInfo>,
-    /// Selected endpoint index
+    
     selected_endpoint: Option<usize>,
-    /// Diagnostic start time
+    
     diagnostic_start: Option<std::time::Instant>,
 }
 
@@ -83,9 +83,9 @@ impl Default for ConnectionPanel {
 }
 
 impl ConnectionPanel {
-    /// Add a diagnostic step to the log
+    
     pub fn add_diagnostic_step(&mut self, step: DiagnosticStep) {
-        // Update existing step or add new
+        
         if let Some(existing) = self.diagnostic_log.iter_mut().find(|s| s.id == step.id) {
             *existing = step;
         } else {
@@ -93,7 +93,7 @@ impl ConnectionPanel {
         }
     }
 
-    /// Set diagnostic result
+    
     pub fn set_diagnostic_result(&mut self, result: DiagnosticResult) {
         self.is_diagnosing = false;
         self.discovered_endpoints = result.endpoints.clone();
@@ -101,7 +101,7 @@ impl ConnectionPanel {
         self.diagnostic_start = None;
     }
 
-    /// Reset diagnostic state
+    
     pub fn reset_diagnostic(&mut self) {
         self.is_diagnosing = false;
         self.diagnostic_log.clear();
@@ -111,7 +111,7 @@ impl ConnectionPanel {
         self.diagnostic_start = None;
     }
 
-    /// Start diagnostic
+    
     pub fn start_diagnostic(&mut self) {
         self.is_diagnosing = true;
         self.diagnostic_log.clear();
@@ -119,17 +119,17 @@ impl ConnectionPanel {
         self.diagnostic_start = Some(std::time::Instant::now());
     }
 
-    /// Set connecting state
+    
     pub fn set_connecting(&mut self, connecting: bool) {
         self.is_connecting = connecting;
     }
 
-    /// Check if the panel should be interactive
+    
     fn is_interactive(&self, is_connected: bool, app_busy: bool) -> bool {
         !is_connected && !app_busy && !self.is_connecting && !self.is_diagnosing
     }
 
-    /// Get diagnostic elapsed time string
+    
     fn get_elapsed_str(&self) -> Option<String> {
         self.diagnostic_start.map(|start| {
             let elapsed = start.elapsed().as_secs();
@@ -137,7 +137,7 @@ impl ConnectionPanel {
         })
     }
 
-    /// Show the connection panel
+    
     #[allow(clippy::too_many_arguments)]
     pub fn show(
         &mut self,
@@ -157,7 +157,7 @@ impl ConnectionPanel {
         ui.heading(format!("🔌 {}", i18n::t(T::Connection, lang)));
         ui.separator();
 
-        // If connected, show disconnect option prominently
+        
         if is_connected {
             ui.add_space(5.0);
             if ui.button(format!("🔌 {}", i18n::t(T::Disconnect, lang)))
@@ -170,7 +170,7 @@ impl ConnectionPanel {
             ui.separator();
         }
 
-        // Bookmarks section
+        
         egui::CollapsingHeader::new(format!("📚 {}", i18n::t(T::SavedServers, lang)))
             .default_open(!is_connected)
             .show(ui, |ui| {
@@ -179,7 +179,7 @@ impl ConnectionPanel {
 
         ui.add_space(10.0);
 
-        // New connection section (collapsed if connected)
+        
         egui::CollapsingHeader::new(format!("➕ {}", i18n::t(T::NewConnection, lang)))
             .default_open(!is_connected)
             .show(ui, |ui| {
@@ -214,13 +214,13 @@ impl ConnectionPanel {
                 ui.add_space(4.0);
             }
 
-            // Apply removals
+            
             if let Some(idx) = to_remove {
                 bookmarks.remove(idx);
                 let _ = bookmarks.save();
             }
 
-            // Load bookmark into form
+            
             if let Some(idx) = to_load {
                 if let Some(bookmark) = bookmarks.servers.get(idx) {
                     self.server_input = bookmark.endpoint_url.clone();
@@ -257,7 +257,7 @@ impl ConnectionPanel {
         let mut action: Option<ConnectionAction> = None;
         let interactive = self.is_interactive(is_connected, app_busy);
 
-        // Server input (more flexible than before)
+        
         ui.horizontal(|ui| {
             ui.label(i18n::t(T::ServerInput, lang));
         });
@@ -269,7 +269,7 @@ impl ConnectionPanel {
                 .desired_width(ui.available_width() - 10.0)
         );
 
-        // Trigger diagnose on Enter key press
+        
         if text_response.lost_focus()
             && ui.input(|i| i.key_pressed(egui::Key::Enter))
             && !self.server_input.is_empty()
@@ -281,14 +281,14 @@ impl ConnectionPanel {
 
         ui.add_space(5.0);
 
-        // Diagnose button
+        
         ui.horizontal(|ui| {
             if self.is_diagnosing {
                 ui.spinner();
                 let elapsed = self.get_elapsed_str().unwrap_or_default();
                 ui.label(format!("{} ({})", i18n::t(T::Diagnose, lang), elapsed));
                 
-                // Always show cancel button during diagnosis (no dependency on can_cancel)
+                
                 if ui.button(format!("⏹ {}", i18n::t(T::Stop, lang)))
                     .on_hover_text(i18n::t(T::CancelTask, lang))
                     .clicked() 
@@ -308,7 +308,7 @@ impl ConnectionPanel {
             }
         });
 
-        // Diagnostic log - show when diagnosing OR when we have log entries
+        
         if self.is_diagnosing || !self.diagnostic_log.is_empty() {
             ui.add_space(5.0);
             ui.label(egui::RichText::new(i18n::t(T::DiagnosticLog, lang)).strong());
@@ -316,7 +316,7 @@ impl ConnectionPanel {
             egui::Frame::dark_canvas(ui.style())
                 .inner_margin(egui::Margin::same(8))
                 .show(ui, |ui| {
-                    // Show immediate feedback if diagnosing but no steps yet
+                    
                     if self.diagnostic_log.is_empty() && self.is_diagnosing {
                         ui.horizontal(|ui| {
                             ui.spinner();
@@ -357,7 +357,7 @@ impl ConnectionPanel {
                 });
         }
 
-        // Show discovered endpoints
+        
         if !self.discovered_endpoints.is_empty() {
             ui.add_space(5.0);
             ui.label(egui::RichText::new(
@@ -370,7 +370,7 @@ impl ConnectionPanel {
                     if ui.add_enabled(interactive, egui::Button::new(ep.display_name(lang)).selected(selected)).clicked() {
                         self.selected_endpoint = Some(i);
                         
-                        // Auto-configure security from endpoint
+                        
                         self.security_policy = match ep.security_policy_name.as_str() {
                             "None" => SecurityPolicy::None,
                             "Basic128Rsa15" => SecurityPolicy::Basic128Rsa15,
@@ -387,14 +387,14 @@ impl ConnectionPanel {
                             _ => MessageSecurityMode::SignAndEncrypt,
                         };
                         
-                        // Auto-configure auth based on endpoint
+                        
                         self.use_auth = !ep.allows_anonymous();
                     }
                 }
             });
         }
         
-        // Show diagnostic result summary
+        
         if let Some(result) = &self.diagnostic_result {
             ui.add_space(5.0);
             if result.overall_success {
@@ -403,7 +403,7 @@ impl ConnectionPanel {
                     format!("✅ {} ({}ms)", i18n::t(T::DiagnosticComplete, lang), result.total_duration_ms)
                 );
                 if let Some(url) = &result.recommended_url {
-                    // Update server_input with recommended URL for connection
+                    
                     if self.server_input != *url && !url.is_empty() {
                         ui.horizontal(|ui| {
                             ui.label("→");
@@ -424,7 +424,7 @@ impl ConnectionPanel {
         ui.add_space(5.0);
         ui.separator();
 
-        // Security settings - read-only display if endpoint selected
+        
         let security_locked = self.selected_endpoint.is_some();
         
         ui.horizontal(|ui| {
@@ -475,7 +475,7 @@ impl ConnectionPanel {
 
         ui.add_space(5.0);
 
-        // Authentication
+        
         ui.add_enabled(interactive && !security_locked, egui::Checkbox::new(&mut self.use_auth, i18n::t(T::UseAuth, lang)));
         if self.use_auth {
             ui.horizontal(|ui| {
@@ -491,7 +491,7 @@ impl ConnectionPanel {
         ui.add_space(10.0);
         ui.separator();
 
-        // Action buttons
+        
         ui.horizontal(|ui| {
             let connect_enabled = !self.server_input.is_empty() && interactive;
             
@@ -504,7 +504,7 @@ impl ConnectionPanel {
                         .clicked() 
                  {
                         self.is_connecting = false;
-                        // Note: actual cancellation handled by app
+                        
                  }
 
             } else if ui.add_enabled(connect_enabled, egui::Button::new(format!("🔗 {}", i18n::t(T::Connect, lang))))
@@ -524,12 +524,12 @@ impl ConnectionPanel {
                     AuthMethod::Anonymous
                 };
 
-                // Use recommended URL if available, otherwise use input
+                
                 let endpoint_url = self.diagnostic_result
                     .as_ref()
                     .and_then(|r| r.recommended_url.clone())
                     .unwrap_or_else(|| {
-                        // If input doesn't have scheme, add it
+                        
                         if self.server_input.starts_with("opc.tcp://") {
                             self.server_input.clone()
                         } else if self.server_input.contains(':') {
@@ -556,7 +556,7 @@ impl ConnectionPanel {
             }
         });
 
-        // Add bookmark dialog
+        
         if self.show_add_bookmark {
             egui::Window::new(i18n::t(T::SaveBookmark, lang))
                 .collapsible(false)

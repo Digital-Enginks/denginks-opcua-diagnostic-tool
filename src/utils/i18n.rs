@@ -1,10 +1,10 @@
-//! Internationalization (i18n) utility
-//! 
-//! Provides a simple translation system for English and Spanish.
+
+
+
 
 use serde::{Deserialize, Serialize};
 
-/// Supported languages
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum Language {
     #[default]
@@ -13,15 +13,15 @@ pub enum Language {
 }
 
 impl Language {
-    // No-op
+    
 }
 
-/// Translation keys
-/// Note: Some variants are prepared for future features (e.g., advanced certificate management)
+
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum T {
-    // Menu
+    
     File,
     View,
     Help,
@@ -34,7 +34,7 @@ pub enum T {
     AboutYear,
     Close,
     
-    // Connection Panel
+    
     Connection,
     Disconnect,
     SavedServers,
@@ -63,20 +63,20 @@ pub enum T {
     Cancel,
     Name,
     
-    // Status
+    
     ReadyNotConnected,
     ConnectedTo,
     Disconnected,
     TaskCancelled,
     EstablishingConnection,
     
-    // Panels
+    
     Watchlist,
     Crawler,
     Properties,
     Trending,
     
-    // Crawler
+    
     StartCrawl,
     MaxDepth,
     MaxNodes,
@@ -90,7 +90,7 @@ pub enum T {
     Class,
     Results,
     
-    // Watchlist
+    
     Node,
     Value,
     Quality,
@@ -101,7 +101,7 @@ pub enum T {
     Remove,
     Trend,
     
-    // Security Policies
+    
     SecurityNone,
     SecurityBasic128Rsa15,
     SecurityBasic256,
@@ -109,12 +109,12 @@ pub enum T {
     SecurityAes128Sha256RsaOaep,
     SecurityAes256Sha256RsaPss,
     
-    // Security Modes
+    
     ModeNone,
     ModeSign,
     ModeSignAndEncrypt,
     
-    // Dashboard
+    
     Welcome,
     StartInstructions,
     ConnectStep1,
@@ -129,7 +129,7 @@ pub enum T {
     DiscoveryFailed,
     NoItems,
     
-    // Diagnostics
+    
     Diagnose,
     ValidatingUrl,
     ResolvingDns,
@@ -146,7 +146,7 @@ pub enum T {
     ServerInput,
     DiagnosticLog,
     
-    // Certificates
+    
     Certificates,
     ClientCertificate,
     TrustedCerts,
@@ -158,12 +158,12 @@ pub enum T {
     CertificateDetails,
     OpenPkiFolder,
     
-    // Tasks
+    
     CancelTask,
     TaskRunning,
     ElapsedTime,
     
-    // Error Panel
+    
     ErrorPanel,
     ClearAll,
     CommonErrors,
@@ -173,7 +173,7 @@ pub enum T {
     ServerDisconnected,
 }
 
-/// Translate a key into the selected language
+
 pub fn t(key: T, lang: Language) -> &'static str {
     match lang {
         Language::English => match_en(key),
@@ -274,7 +274,7 @@ fn match_en(key: T) -> &'static str {
         T::DiscoveryFailed => "Discovery failed",
         T::NoItems => "No items to show.",
         
-        // Diagnostics
+        
         T::Diagnose => "Diagnose",
         T::ValidatingUrl => "Validating input...",
         T::ResolvingDns => "Resolving DNS...",
@@ -291,7 +291,7 @@ fn match_en(key: T) -> &'static str {
         T::ServerInput => "Server (IP, hostname, or URL):",
         T::DiagnosticLog => "Diagnostic Log",
         
-        // Certificates
+        
         T::Certificates => "Certificates",
         T::ClientCertificate => "Client Certificate",
         T::TrustedCerts => "Trusted Certificates",
@@ -303,12 +303,12 @@ fn match_en(key: T) -> &'static str {
         T::CertificateDetails => "Certificate Details",
         T::OpenPkiFolder => "Open PKI Folder",
         
-        // Tasks
+        
         T::CancelTask => "Cancel Task",
         T::TaskRunning => "Task running",
         T::ElapsedTime => "Elapsed",
         
-        // Error Panel
+        
         T::ErrorPanel => "Errors",
         T::ClearAll => "Clear All",
         T::CommonErrors => "Common OPC-UA Errors",

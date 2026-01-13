@@ -1,7 +1,7 @@
-//! OPC-UA client module
-//!
-//! Provides OPC-UA client functionality including connection management,
-//! node browsing, certificate handling, and subscriptions.
+
+
+
+
 
 pub mod browser;
 pub mod certificates;

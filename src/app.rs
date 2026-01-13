@@ -1,4 +1,4 @@
-//! Main application state and eframe App implementation
+
 
 use eframe::egui;
 use std::collections::HashMap;
@@ -24,7 +24,7 @@ use crate::ui::properties::PropertiesPanel;
 use crate::utils::i18n::{self, T, Language};
 
 
-/// Current status of the application
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum AppStatus {
     #[default]
@@ -35,45 +35,45 @@ pub enum AppStatus {
     },
 }
 
-/// Metadata for an active background task
+
 pub struct ActiveTask {
-    /// Name of the task for UI display
+    
     pub name: String,
-    /// Handle to abort the task if possible
+    
     pub handle: tokio::task::JoinHandle<()>,
-    /// Cancellation token
+    
     pub cancel_token: tokio_util::sync::CancellationToken,
 }
 
-/// Messages sent from background tasks to the UI
+
 #[derive(Debug)]
 pub enum BackendMessage {
-    /// Session established successfully
+    
     SessionEstablished { endpoint: String },
-    /// Session closed
+    
     SessionClosed,
-    /// Browse result: (Parent NodeId, Children)
+    
     BrowseResult(NodeId, Result<Vec<BrowsedNode>, String>),
-    /// Error message to display
+    
     Error(String),
-    /// Status message update
+    
     StatusMessage(String),
-    /// Live data change: (MonitoredItemId, DataValue)
+    
     DataChange(u32, DataValue),
-    /// Subscription created
+    
     SubscriptionCreated(u32),
-    /// Monitored items added: Vec<(NodeId, MonitoredItemId, ClientHandle)>
+    
     MonitoredItemsAdded(Vec<(NodeId, u32, u32)>),
-    /// Crawl result
+    
     CrawlResult(Result<Vec<BrowsedNode>, String>),
-    /// Diagnostic step progress
+    
     DiagnosticStep(DiagnosticStep),
-    /// Diagnostic complete
+    
     DiagnosticComplete(crate::network::diagnostics::DiagnosticResult),
 }
 
 
-/// Current connection state
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub enum ConnectionState {
     #[default]
@@ -84,124 +84,124 @@ pub enum ConnectionState {
 
 
 
-/// Main application struct
+
 pub struct DiagnosticApp {
-    /// Tokio runtime handle for spawning async tasks
+    
     runtime: Handle,
 
-    /// Channel sender for sending messages to background tasks
+    
     #[allow(dead_code)]
     task_tx: mpsc::Sender<TaskMessage>,
 
-    /// Channel receiver for receiving messages from background tasks
+    
     backend_rx: mpsc::Receiver<BackendMessage>,
 
-    /// Channel sender for background tasks to send messages back
+    
     backend_tx: mpsc::Sender<BackendMessage>,
 
-    /// Current connection state
+    
     connection_state: ConnectionState,
 
-    /// Server bookmarks
+    
     bookmarks: Bookmarks,
 
-    /// Connection panel UI state
+    
     connection_panel: ConnectionPanel,
 
-    /// Show connection panel
+    
     show_connection_panel: bool,
 
-    /// Status bar message
+    
     status_message: String,
 
-    /// Active OPC-UA client session
+    
     opcua_client: Arc<RwLock<Option<OpcUaClient>>>,
 
-    /// Cached children nodes [Parent NodeId -> Children]
+    
     node_cache: HashMap<NodeId, Vec<BrowsedNode>>,
 
-    /// Top-level root nodes
+    
     root_nodes: Vec<BrowsedNode>,
 
-    /// Currently selected node
+    
     selected_node: Option<BrowsedNode>,
 
-    /// Global application status
+    
     status: AppStatus,
 
-    /// Currently running background task
+    
     active_task: Option<ActiveTask>,
 
-    /// Show about dialog
+    
     show_about: bool,
 
-    // -- Phase 4 Fields --
     
-    /// Subscription Manager
+    
+    
     pub subscription_manager: SubscriptionManager,
     
-    /// Watchlist (Monitor) Panel
+    
     monitor_panel: MonitorPanel,
     
-    /// Trending Panel
+    
     trending_panel: TrendingPanel,
     
-    /// Show watchlist panel
+    
     show_watchlist: bool,
     
-    /// Show trending panel
+    
     show_trending: bool,
 
-    // -- Phase 5 Fields --
+    
 
-    /// Crawler Panel
+    
     crawler_panel: CrawlerPanel,
 
-    /// Show crawler panel
+    
     show_crawler: bool,
 
-    // -- Phase 6 Fields --
+    
 
-    /// Certificates Panel
+    
     certificates_panel: CertificatesPanel,
 
-    /// Show certificates panel
+    
     show_certificates: bool,
 
-    /// Current language
+    
     current_lang: Language,
 
-    // -- Error Handling --
+    
 
-    /// Error notification panel
+    
     error_panel: ErrorPanel,
 
-    /// Show error panel
+    
     show_errors: bool,
 
-    /// Last connection health check timestamp
+    
     last_connection_check: std::time::Instant,
 }
 
 
-/// Messages sent to background tasks
+
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum TaskMessage {
-    /// Check network connectivity
+    
     CheckNetwork(String),
-    /// Discover endpoints
+    
     DiscoverEndpoints(String),
-    /// Connect to server
+    
     Connect(ClientConfig),
-    /// Disconnect from server
+    
     Disconnect,
-    /// Browse a node
+    
     Browse(NodeId),
 }
 
 impl DiagnosticApp {
-    /// Create a new DiagnosticApp instance
+    
     pub fn new(_cc: &eframe::CreationContext<'_>, runtime: Handle) -> Self {
         // Create channels for communication
         let (task_tx, _task_rx) = std::sync::mpsc::channel::<TaskMessage>();
@@ -364,7 +364,7 @@ impl DiagnosticApp {
         if let Some(task) = &self.active_task {
             if task.handle.is_finished() {
                 // If it finished but we didn't get a specific success/fail message affecting state,
-                // we must ensure the UI is not stuck in a "loading" state.
+                
                 self.connection_panel.set_connecting(false);
                 
                 self.active_task = None;
@@ -372,14 +372,14 @@ impl DiagnosticApp {
             }
         }
 
-        // Connection health check - every 2 seconds
+        
         if self.last_connection_check.elapsed().as_secs() >= 2 {
             self.last_connection_check = std::time::Instant::now();
             self.check_connection_health();
         }
     }
 
-    /// Check if the connection is still alive
+    
     fn check_connection_health(&mut self) {
         if let ConnectionState::Connected { .. } = &self.connection_state {
             let client_handle = self.opcua_client.clone();
@@ -389,18 +389,18 @@ impl DiagnosticApp {
                 let guard = client_handle.read().await;
                 if let Some(client) = guard.as_ref() {
                     if !client.is_connected() {
-                        // Connection lost
+                        
                         let _ = tx.send(BackendMessage::SessionClosed);
                     }
                 } else {
-                    // No client = disconnected
+                    
                     let _ = tx.send(BackendMessage::SessionClosed);
                 }
             });
         }
     }
 
-    /// Set the application to busy state with a task name
+    
     pub fn set_busy(&mut self, task_name: &str, handle: tokio::task::JoinHandle<()>, cancel_token: tokio_util::sync::CancellationToken) {
         self.status = AppStatus::Busy {
             task_name: task_name.to_string(),
@@ -413,51 +413,51 @@ impl DiagnosticApp {
         });
     }
 
-    /// Set the application to busy state with a task name (simple version for backward compat)
+    
     pub fn set_busy_simple(&mut self, task_name: &str, handle: tokio::task::JoinHandle<()>) {
         let cancel_token = tokio_util::sync::CancellationToken::new();
         self.set_busy(task_name, handle, cancel_token);
     }
 
-    /// Cancel the active task
+    
     pub fn cancel_task(&mut self) {
         if let Some(task) = self.active_task.take() {
-            // Signal cancellation first
+            
             task.cancel_token.cancel();
-            // Then abort the handle
+            
             task.handle.abort();
             self.status = AppStatus::Idle;
             self.status_message = i18n::t(T::TaskCancelled, self.current_lang).replace("{}", &task.name);
-            // Also reset connection panel state
+            
             self.connection_panel.reset_diagnostic();
             self.connection_panel.set_connecting(false);
         }
     }
 
-    /// Get the tokio runtime handle
+    
     #[allow(dead_code)]
     pub fn runtime(&self) -> &Handle {
         &self.runtime
     }
 
-    /// Get the backend message sender for async tasks
+    
     #[allow(dead_code)]
     pub fn backend_sender(&self) -> mpsc::Sender<BackendMessage> {
         self.backend_tx.clone()
     }
 
-    /// Get the OPC-UA client handle
+    
     #[allow(dead_code)]
     pub fn opcua_client(&self) -> Arc<RwLock<Option<OpcUaClient>>> {
         self.opcua_client.clone()
     }
 
-    /// Check if currently connected
+    
     pub fn is_connected(&self) -> bool {
         matches!(self.connection_state, ConnectionState::Connected { .. })
     }
 
-    /// Connect to an OPC-UA server
+    
     pub fn connect(&mut self, config: ClientConfig) {
         if let Err(e) = crate::network::precheck::parse_endpoint_url(&config.endpoint_url) {
             self.status_message = format!("{}: {}", i18n::t(T::ConnectionError, self.current_lang), e);
@@ -476,7 +476,7 @@ impl DiagnosticApp {
 
             match OpcUaClient::connect(config).await {
                 Ok(client) => {
-                    // Store the client
+                    
                     {
                         let mut guard = client_handle.write().await;
                         *guard = Some(client);
@@ -492,7 +492,7 @@ impl DiagnosticApp {
         self.set_busy_simple(i18n::t(T::Connecting, self.current_lang), handle);
     }
 
-    /// Disconnect from the current server
+    
     pub fn disconnect(&mut self) {
         let tx = self.backend_tx.clone();
         let client_handle = self.opcua_client.clone();
@@ -506,7 +506,7 @@ impl DiagnosticApp {
         });
     }
 
-    /// Browse a specific node
+    
     fn browse_node(&mut self, node_id: NodeId) {
         let tx = self.backend_tx.clone();
         let client_handle = self.opcua_client.clone();
@@ -530,7 +530,7 @@ impl DiagnosticApp {
         self.set_busy_simple(i18n::t(T::Properties, self.current_lang), handle);
     }
 
-    /// Start network diagnostic for a server input
+    
     pub fn start_diagnostic(&mut self, input: String) {
         self.connection_panel.start_diagnostic();
         
@@ -541,7 +541,7 @@ impl DiagnosticApp {
         
         let (progress_tx, mut progress_rx) = tokio::sync::mpsc::channel::<crate::network::diagnostics::DiagnosticStep>(32);
         
-        // Spawn a forwarder task to send progress updates to the UI
+        
         let tx_progress = tx.clone();
         self.runtime.spawn(async move {
             while let Some(step) = progress_rx.recv().await {
@@ -563,7 +563,7 @@ impl DiagnosticApp {
         self.set_busy(i18n::t(T::Diagnose, self.current_lang), handle, cancel_token);
     }
 
-    /// Add a node to the watchlist
+    
     pub fn add_to_watchlist(&mut self, node: &BrowsedNode) {
         match self.subscription_manager.request_add_to_watchlist(node) {
             SubscriptionAction::None => {}
@@ -585,7 +585,7 @@ impl DiagnosticApp {
         }
     }
 
-    /// Remove a node from the watchlist
+    
     pub fn remove_from_watchlist(&mut self, node_id: &NodeId) {
         self.subscription_manager.remove_from_watchlist(
             node_id,
@@ -594,7 +594,7 @@ impl DiagnosticApp {
         );
     }
     
-    /// Toggle trending for a node
+    
     pub fn toggle_trending(&mut self, node_id: NodeId) {
         if let Some(item) = self.subscription_manager.monitored_items.get_mut(&node_id) {
             item.show_in_trend = !item.show_in_trend;
@@ -604,7 +604,7 @@ impl DiagnosticApp {
         }
     }
 
-    /// Change the trend color for a node
+    
     pub fn change_trend_color(&mut self, node_id: NodeId, rgb: [u8; 3]) {
         if let Some(item) = self.subscription_manager.monitored_items.get_mut(&node_id) {
             item.trend_color = Some(rgb);
@@ -612,7 +612,7 @@ impl DiagnosticApp {
     }
 
 
-    /// Start a crawl task
+    
     pub fn start_crawl(&mut self, config: crate::opcua::crawler::CrawlConfig) {
          let tx = self.backend_tx.clone();
          let client_handle = self.opcua_client.clone();
@@ -636,7 +636,7 @@ impl DiagnosticApp {
          self.set_busy_simple("Crawling", handle);
     }
 
-      /// Export watchlist to CSV
+      
       pub fn export_watchlist_csv(&self) {
            if let Some(path) = rfd::FileDialog::new()
                 .set_file_name("watchlist.csv")
@@ -650,7 +650,7 @@ impl DiagnosticApp {
            }
       }
 
-      /// Export watchlist to JSON
+      
       pub fn export_watchlist_json(&self) {
            if let Some(path) = rfd::FileDialog::new()
                 .set_file_name("watchlist.json")
@@ -664,7 +664,7 @@ impl DiagnosticApp {
            }
       }
 
-     /// Export crawl results to JSON
+     
      pub fn export_crawl_json(&self) {
           if let Some(path) = rfd::FileDialog::new()
                 .set_file_name("crawl_result.json")
@@ -677,7 +677,7 @@ impl DiagnosticApp {
           }
      }
 
-     /// Export crawl results to CSV
+     
      pub fn export_crawl_csv(&self) {
           if let Some(path) = rfd::FileDialog::new()
                 .set_file_name("crawl_result.csv")
@@ -694,16 +694,16 @@ impl DiagnosticApp {
 
 impl eframe::App for DiagnosticApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Process any pending messages from background tasks
+        
         self.process_backend_messages();
 
-        // Request repaint to check for new messages
+        
         ctx.request_repaint_after(std::time::Duration::from_millis(100));
 
-        // Apply dark theme
+        
         ctx.set_visuals(egui::Visuals::dark());
 
-        // Calculate elapsed time and busy state for UI
+        
         let (elapsed_str, can_cancel) = if let AppStatus::Busy { start_time, .. } = &self.status {
             let elapsed = start_time.elapsed().as_secs();
             (Some(format!("({}s)", elapsed)), true)
@@ -711,7 +711,7 @@ impl eframe::App for DiagnosticApp {
             (None, false)
         };
 
-        // Top menu bar
+        
         egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button(i18n::t(T::File, self.current_lang), |ui| {
@@ -745,7 +745,7 @@ impl eframe::App for DiagnosticApp {
             });
         });
 
-        // About Dialog
+        
         if self.show_about {
             egui::Window::new(i18n::t(T::AboutTitle, self.current_lang))
                 .collapsible(false)
@@ -769,12 +769,12 @@ impl eframe::App for DiagnosticApp {
                 });
         }
 
-        // Status bar at bottom
+        
         egui::TopBottomPanel::bottom("status_bar")
             .min_height(24.0)
             .show(ctx, |ui| {
             ui.horizontal(|ui| {
-                // Connection status indicator
+                
                 let (color, text) = match &self.connection_state {
                     ConnectionState::Disconnected => {
                         if matches!(self.status, AppStatus::Busy { ref task_name, .. } if task_name == i18n::t(T::Connecting, self.current_lang)) {
@@ -790,7 +790,7 @@ impl eframe::App for DiagnosticApp {
                 ui.label(egui::RichText::new(text).color(color));
                 ui.separator();
                 
-                // Show busy status if applicable
+                
                 if let AppStatus::Busy { task_name, start_time } = &self.status {
                     let elapsed = start_time.elapsed().as_secs();
                     ui.spinner();
@@ -806,7 +806,7 @@ impl eframe::App for DiagnosticApp {
             });
         });
 
-        // Connection panel (left side)
+        
         if self.show_connection_panel {
             egui::SidePanel::left("connection_panel")
                 .resizable(true)
@@ -814,13 +814,13 @@ impl eframe::App for DiagnosticApp {
                 .min_width(280.0)
                 .max_width(400.0)
                 .show(ctx, |ui| {
-                    // Clone values needed for the closure
+                    
                     let runtime = self.runtime.clone();
                     let tx = self.backend_tx.clone();
                     let is_connected = self.is_connected();
                     let app_busy = matches!(self.status, AppStatus::Busy { .. });
                     
-                    // Collect connect/disconnect actions
+                    
                     let (action, _unused_disconnect) = self.connection_panel.show(
                         ui,
                         &mut self.bookmarks,
@@ -833,7 +833,7 @@ impl eframe::App for DiagnosticApp {
                         self.current_lang,
                     );
 
-                    // Handle actions outside the panel show
+                    
                     match action {
                         Some(crate::ui::connection::ConnectionAction::Connect(config)) => {
                             self.connect(config);
@@ -852,7 +852,7 @@ impl eframe::App for DiagnosticApp {
                 });
         }
 
-        // Properties Panel (Right side)
+        
         let mut properties_action = None;
         if self.is_connected() {
             egui::SidePanel::right("properties_panel")
@@ -869,7 +869,7 @@ impl eframe::App for DiagnosticApp {
                 });
         }
         
-        // Crawler Panel (Right side, stacked or conditional)
+        
         let mut crawler_action = None;
         if self.show_crawler {
              egui::SidePanel::right("crawler_panel")
@@ -882,7 +882,7 @@ impl eframe::App for DiagnosticApp {
                 });
         }
 
-        // Certificates Panel
+        
         if self.show_certificates {
             egui::SidePanel::right("certificates_panel_view")
                 .resizable(true)
@@ -897,23 +897,23 @@ impl eframe::App for DiagnosticApp {
         }
 
         
-        // Handle Crawler Actions
+        
         if let Some(action) = crawler_action {
             match action {
                 CrawlerAction::StartCrawl(config) => self.start_crawl(config),
                 CrawlerAction::ExportJson => self.export_crawl_json(),
                 CrawlerAction::ExportCsv => self.export_crawl_csv(),
                 CrawlerAction::JumpToNode(node_id) => {
-                    // Browse to the node (expand path)
-                    // Simplified: just set selected node if we have it?
-                    // We need to browse to it. For now, just browse it.
+                    
+                    
+                    
                     self.browse_node(node_id);
                 }
             }
         }
 
 
-        // Handle Properties Actions
+        
 
         if let Some(action) = properties_action {
             match action {
@@ -923,8 +923,8 @@ impl eframe::App for DiagnosticApp {
             }
         }
 
-        // Monitor & Trending Panel (Bottom)
-        // Only show if connected AND there are items to display
+        
+        
         if self.is_connected() && (self.show_watchlist || self.show_trending)
            && !self.subscription_manager.monitored_items.is_empty() {
             egui::TopBottomPanel::bottom("monitor_panel")
@@ -939,7 +939,7 @@ impl eframe::App for DiagnosticApp {
                     });
                     ui.separator();
 
-                    // Vertical layout: Watchlist on top, Trending below
+                    
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         if self.show_watchlist {
                             if let Some(action) = self.monitor_panel.show(ui, &self.subscription_manager.monitored_items, self.current_lang) {
@@ -964,7 +964,7 @@ impl eframe::App for DiagnosticApp {
                 });
         }
 
-        // Error Panel (Right side)
+        
         if self.show_errors {
             egui::SidePanel::right("error_panel")
                 .resizable(true)
@@ -976,11 +976,11 @@ impl eframe::App for DiagnosticApp {
                 });
         }
 
-        // Show toast notifications (overlay)
+        
         self.error_panel.show_toasts(ctx);
 
 
-        // Main central panel (Tree View)
+        
         egui::CentralPanel::default().show(ctx, |ui| {
             
             match &self.connection_state {
@@ -988,7 +988,7 @@ impl eframe::App for DiagnosticApp {
                     ui.label(format!("Connected to: {}", endpoint));
                     ui.separator();
                     
-                    // Tree View
+                    
                     egui::ScrollArea::both()
                         .auto_shrink([false; 2])
                         .show(ui, |ui| {
@@ -1008,18 +1008,18 @@ impl eframe::App for DiagnosticApp {
                                      self.add_to_watchlist(&node);
                                  }
                                  crate::ui::tree_view::TreeViewAction::ExportJson(node) => {
-                                     // Configure crawler to start from this node
+                                     
                                      self.show_crawler = true;
                                      self.crawler_panel.config.start_node = node.node_id.clone();
-                                     self.crawler_panel.config.max_depth = 10; // set strictly high
+                                     self.crawler_panel.config.max_depth = 10; 
                                      self.crawler_panel.config.max_nodes = 100000;
                                      
-                                     // Trigger crawl
+                                     
                                      self.start_crawl(self.crawler_panel.config.clone());
                                  }
                                  crate::ui::tree_view::TreeViewAction::ExportCsv(node) => {
-                                      // Same as JSON, just start crawl. User will export from panel.
-                                      // Ideally we'd auto-export but that requires callback hell or state machine.
+                                      
+                                      
                                      self.show_crawler = true;
                                      self.crawler_panel.config.start_node = node.node_id.clone();
                                      self.crawler_panel.config.max_depth = 10;

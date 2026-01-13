@@ -1,7 +1,7 @@
-//! Network diagnostics module
-//!
-//! Provides comprehensive network diagnostic functionality for OPC-UA connections.
-//! Includes URL validation, DNS resolution, port scanning, and endpoint discovery.
+
+
+
+
 
 use std::net::ToSocketAddrs;
 use std::time::{Duration, Instant};
@@ -13,10 +13,10 @@ use tokio_util::sync::CancellationToken;
 use crate::network::discovery;
 use crate::utils::i18n::{self, t, T, Language};
 
-/// Common OPC-UA ports to scan
+
 pub const OPCUA_COMMON_PORTS: &[u16] = &[4840, 4841, 4842, 4843, 48010, 48020, 62541];
 
-/// Status of a diagnostic step
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StepStatus {
     Pending,
@@ -27,7 +27,7 @@ pub enum StepStatus {
 }
 
 impl StepStatus {
-    /// Get emoji representation for UI
+    
     pub fn icon(&self) -> &'static str {
         match self {
             StepStatus::Pending => "⏳",
@@ -228,12 +228,12 @@ pub fn parse_user_input(input: &str) -> ParsedInput {
                 result.host = parts[0].to_string();
             }
             2 => {
-                // Try to parse as port
+                
                 if let Ok(p) = parts[0].parse::<u16>() {
                     result.port = Some(p);
                     result.host = parts[1].to_string();
                 } else {
-                    // Might be IPv6 without brackets
+                    
                     result.host = host_port.to_string();
                 }
             }
@@ -243,7 +243,7 @@ pub fn parse_user_input(input: &str) -> ParsedInput {
         }
     }
 
-    // Validate host is not empty
+    
     if result.host.is_empty() {
         result.errors.push("Host cannot be empty".to_string());
     }
@@ -251,7 +251,7 @@ pub fn parse_user_input(input: &str) -> ParsedInput {
     result
 }
 
-/// Run a complete network diagnostic
+
 pub async fn run_diagnostic(
     input: &str,
     progress_tx: mpsc::Sender<DiagnosticStep>,
@@ -261,7 +261,7 @@ pub async fn run_diagnostic(
     let start = Instant::now();
     let mut result = DiagnosticResult::new();
 
-    // Step 1: Validate input
+    
     let step1 = DiagnosticStep::new(StepId::ValidateInput, t(T::ValidatingUrl, lang));
     let _ = progress_tx.send(step1.clone().running(t(T::ValidatingUrl, lang))).await;
 
@@ -279,13 +279,13 @@ pub async fn run_diagnostic(
     let _ = progress_tx.send(step.clone()).await;
     result.steps.push(step);
 
-    // Check for cancellation
+    
     if cancel.is_cancelled() {
         result.total_duration_ms = start.elapsed().as_millis() as u64;
         return result;
     }
 
-    // Step 2: DNS Resolution (if hostname)
+    
     let step2 = DiagnosticStep::new(StepId::ResolveDns, t(T::ResolvingDns, lang));
     let _ = progress_tx.send(step2.clone().running(format!("Resolving {}...", parsed.host))).await;
 
@@ -318,16 +318,16 @@ pub async fn run_diagnostic(
         }
     };
 
-    // Check for cancellation
+    
     if cancel.is_cancelled() {
         result.total_duration_ms = start.elapsed().as_millis() as u64;
         return result;
     }
 
-    // Step 3: Port Scan
+    
     let step3 = DiagnosticStep::new(StepId::ScanPorts, t(T::ScanningPorts, lang));
     
-    // If user specified a port, only scan that port
+    
     let ports_to_scan: Vec<u16> = if let Some(p) = parsed.port {
         vec![p]
     } else {
@@ -384,13 +384,13 @@ pub async fn run_diagnostic(
     let _ = progress_tx.send(step.clone()).await;
     result.steps.push(step);
 
-    // Check for cancellation
+    
     if cancel.is_cancelled() {
         result.total_duration_ms = start.elapsed().as_millis() as u64;
         return result;
     }
 
-    // Step 4: OPC-UA Endpoint Discovery (try each open port)
+    
     let step4 = DiagnosticStep::new(StepId::DiscoverEndpoints, t(T::DiscoveringEndpoints, lang));
     let _ = progress_tx.send(step4.clone().running(t(T::DiscoveringEndpoints, lang))).await;
 

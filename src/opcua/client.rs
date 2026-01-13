@@ -1,7 +1,7 @@
-//! OPC-UA Client builder and session management
-//!
-//! Provides async client creation, session establishment with keep-alive,
-//! and channel-based communication with the UI.
+
+
+
+
 
 use anyhow::{Context, Result};
 use std::sync::Arc;
@@ -16,21 +16,21 @@ use crate::opcua::certificates::CertificateManager;
 
 static NEXT_CLIENT_HANDLE: AtomicU32 = AtomicU32::new(1);
 
-/// Configuration for OPC-UA client connection
+
 #[derive(Debug, Clone)]
 pub struct ClientConfig {
-    /// Endpoint URL (opc.tcp://...)
+    
     pub endpoint_url: String,
-    /// Security policy
+    
     pub security_policy: SecurityPolicy,
-    /// Message security mode
+    
     pub security_mode: MessageSecurityMode,
-    /// Authentication method
+    
     pub auth_method: AuthMethod,
 }
 
 impl ClientConfig {
-    /// Create from a server bookmark
+    
     #[allow(dead_code)]
     pub fn from_bookmark(bookmark: &ServerBookmark) -> Self {
         Self {
@@ -41,7 +41,7 @@ impl ClientConfig {
         }
     }
 
-    /// Get the identity token for authentication
+    
     pub fn identity_token(&self) -> IdentityToken {
         match &self.auth_method {
             AuthMethod::Anonymous => IdentityToken::Anonymous,
@@ -51,7 +51,7 @@ impl ClientConfig {
         }
     }
 
-    /// Get the security policy string for endpoint matching
+    
     pub fn security_policy_string(&self) -> &'static str {
         match self.security_policy {
             SecurityPolicy::None => "None",
@@ -190,11 +190,11 @@ impl OpcUaClient {
         let subscription_id = self.session
             .create_subscription(
                 publishing_interval,
-                10,     // Lifetime count
-                30,     // Max keepalive count
-                0,      // Max notifications per publish (0 = unlimited)
-                0,      // Priority
-                true,   // Publishing enabled
+                10,     
+                30,     
+                0,      
+                0,      
+                true,   
                 DataChangeCallback::new(callback),
             )
             .await
@@ -206,8 +206,8 @@ impl OpcUaClient {
 
 
 
-    /// Add monitored items to an existing subscription
-    /// Returns a vector of (NodeId, MonitoredItemId, ClientHandle) pairs
+    
+    
     pub async fn add_monitored_items(
         &self,
         subscription_id: u32,
@@ -221,7 +221,7 @@ impl OpcUaClient {
 
         tracing::info!("Adding {} monitored items to subscription {}", node_ids.len(), subscription_id);
 
-        // Create monitored item requests with unique client handles
+        
         let mut items = Vec::with_capacity(node_ids.len());
         let mut handles = Vec::with_capacity(node_ids.len());
 
@@ -233,13 +233,13 @@ impl OpcUaClient {
             handles.push(client_handle);
         }
 
-        // Create the monitored items
+        
         let results = self.session
             .create_monitored_items(subscription_id, TimestampsToReturn::Both, items)
             .await
             .context("Failed to create monitored items")?;
 
-        // Map results to (NodeId, MonitoredItemId, ClientHandle) pairs
+        
         let mut pairs = Vec::new();
         for (i, result) in results.iter().enumerate() {
             if result.result.status_code.is_good() {
@@ -254,7 +254,7 @@ impl OpcUaClient {
         Ok(pairs)
     }
 
-    /// Remove monitored items from a subscription
+    
     pub async fn remove_monitored_items(
         &self,
         subscription_id: u32,
@@ -280,7 +280,7 @@ impl OpcUaClient {
         Ok(())
     }
 
-    /// Delete a subscription
+    
     #[allow(dead_code)]
     pub async fn delete_subscription(&self, subscription_id: u32) -> Result<()> {
         tracing::info!("Deleting subscription {}", subscription_id);

@@ -1,11 +1,11 @@
-//! Server bookmarks save/load functionality
+
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use crate::utils::i18n::{self, T, Language};
 
-/// Security policy for OPC-UA connection
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub enum SecurityPolicy {
     #[default]
@@ -18,7 +18,7 @@ pub enum SecurityPolicy {
 }
 
 impl SecurityPolicy {
-    /// Get all available security policies
+    
     pub fn all() -> Vec<Self> {
         vec![
             Self::None,
@@ -30,7 +30,7 @@ impl SecurityPolicy {
         ]
     }
 
-    /// Convert to display string
+    
     pub fn display_name(&self, lang: Language) -> String {
         match self {
             Self::None => i18n::t(T::SecurityNone, lang).to_string(),
@@ -43,7 +43,7 @@ impl SecurityPolicy {
     }
 }
 
-/// Message security mode
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub enum MessageSecurityMode {
     #[default]
@@ -53,12 +53,12 @@ pub enum MessageSecurityMode {
 }
 
 impl MessageSecurityMode {
-    /// Get all available modes
+    
     pub fn all() -> Vec<Self> {
         vec![Self::None, Self::Sign, Self::SignAndEncrypt]
     }
 
-    /// Convert to display string
+    
     pub fn display_name(&self, lang: Language) -> String {
         match self {
             Self::None => i18n::t(T::ModeNone, lang).to_string(),
@@ -68,7 +68,7 @@ impl MessageSecurityMode {
     }
 }
 
-/// Authentication method
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub enum AuthMethod {
     #[default]
@@ -81,34 +81,34 @@ pub enum AuthMethod {
 
 impl AuthMethod {}
 
-/// A saved server bookmark
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ServerBookmark {
-    /// Display name for the bookmark
+    
     pub name: String,
-    /// OPC-UA endpoint URL (e.g., opc.tcp://localhost:4840)
+    
     pub endpoint_url: String,
-    /// Security policy
+    
     pub security_policy: SecurityPolicy,
-    /// Message security mode
+    
     pub security_mode: MessageSecurityMode,
-    /// Authentication method
+    
     pub auth_method: AuthMethod,
 }
 
 impl ServerBookmark {}
 
-/// Collection of server bookmarks
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Bookmarks {
-    /// List of saved bookmarks
+    
     pub servers: Vec<ServerBookmark>,
 }
 
 impl Bookmarks {
-    /// Get the path to the bookmarks file
+    
     fn bookmarks_path() -> PathBuf {
-        // Store next to the executable
+        
         std::env::current_exe()
             .unwrap_or_else(|_| PathBuf::from("."))
             .parent()
@@ -117,7 +117,7 @@ impl Bookmarks {
             .join("bookmarks.json")
     }
 
-    /// Load bookmarks from file
+    
     pub fn load() -> Result<Self> {
         let path = Self::bookmarks_path();
         if path.exists() {
@@ -131,7 +131,7 @@ impl Bookmarks {
         }
     }
 
-    /// Save bookmarks to file
+    
     pub fn save(&self) -> Result<()> {
         let path = Self::bookmarks_path();
         let content = serde_json::to_string_pretty(self)?;
@@ -140,19 +140,19 @@ impl Bookmarks {
         Ok(())
     }
 
-    /// Add a new bookmark
+    
     pub fn add(&mut self, bookmark: ServerBookmark) {
         self.servers.push(bookmark);
     }
 
-    /// Remove a bookmark by index
+    
     pub fn remove(&mut self, index: usize) {
         if index < self.servers.len() {
             self.servers.remove(index);
         }
     }
 
-    /// Check if empty
+    
     pub fn is_empty(&self) -> bool {
         self.servers.is_empty()
     }

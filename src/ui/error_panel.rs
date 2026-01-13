@@ -1,6 +1,6 @@
-//! Error notification panel UI
-//!
-//! Provides toast notifications and error panel for displaying errors to users.
+
+
+
 
 use eframe::egui;
 use std::collections::VecDeque;
@@ -8,13 +8,13 @@ use std::time::Instant;
 
 use crate::utils::i18n::{self, T, Language};
 
-/// Maximum number of notifications to keep
+
 const MAX_NOTIFICATIONS: usize = 10;
 
-/// How long toast notifications stay visible (seconds)
+
 const TOAST_DURATION_SECS: u64 = 5;
 
-/// Severity level of an error
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ErrorSeverity {
     #[allow(dead_code)]
@@ -102,31 +102,31 @@ pub fn get_common_errors(lang: Language) -> Vec<(&'static str, &'static str, &'s
     }
 }
 
-/// Error panel state
+
 #[derive(Default)]
 pub struct ErrorPanel {
-    /// Queue of notifications
+    
     pub notifications: VecDeque<ErrorNotification>,
-    /// Show the full error panel
+    
     #[allow(dead_code)]
     pub show_panel: bool,
-    /// Show the common errors reference
+    
     pub show_reference: bool,
 }
 
 impl ErrorPanel {
-    /// Add a new error notification
+    
     pub fn add_error(&mut self, message: impl Into<String>, severity: ErrorSeverity) {
         let notification = ErrorNotification::new(message, severity);
         self.notifications.push_front(notification);
         
-        // Keep only the most recent notifications
+        
         while self.notifications.len() > MAX_NOTIFICATIONS {
             self.notifications.pop_back();
         }
     }
 
-    /// Add an error with details
+    
     #[allow(dead_code)]
     pub fn add_error_with_details(&mut self, message: impl Into<String>, details: impl Into<String>, severity: ErrorSeverity) {
         let notification = ErrorNotification::new(message, severity).with_details(details);
@@ -137,29 +137,29 @@ impl ErrorPanel {
         }
     }
 
-    /// Clear all notifications
+    
     pub fn clear(&mut self) {
         self.notifications.clear();
     }
 
-    /// Check if there are any active toasts
+    
     #[allow(dead_code)]
     pub fn has_active_toasts(&self) -> bool {
         self.notifications.iter().any(|n| n.is_toast_active())
     }
 
-    /// Show toast notifications (overlay)
+    
     pub fn show_toasts(&self, ctx: &egui::Context) {
         let active_toasts: Vec<_> = self.notifications.iter()
             .filter(|n| n.is_toast_active())
-            .take(3) // Max 3 toasts at once
+            .take(3) 
             .collect();
 
         if active_toasts.is_empty() {
             return;
         }
 
-        // Show toasts in the top-right corner
+        
         egui::Area::new(egui::Id::new("error_toasts"))
             .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-10.0, 40.0))
             .show(ctx, |ui| {
@@ -190,7 +190,7 @@ impl ErrorPanel {
             });
     }
 
-    /// Show the error panel (full panel view)
+    
     pub fn show_panel(&mut self, ui: &mut egui::Ui, lang: Language) {
         ui.heading(format!("{} {}", "⚠️", i18n::t(T::ErrorPanel, lang)));
         

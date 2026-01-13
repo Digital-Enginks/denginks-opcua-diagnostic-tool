@@ -1,11 +1,11 @@
-//! OPC-UA Status Code translation
-//!
-//! Converts OPC-UA status codes to human-readable messages
+
+
+
 
 pub fn translate_status_code(code: u32) -> String {
-    // First try exact match
+    
     let msg = match code {
-        // Good status codes
+        
         0x00000000 => Some("Good"),
         0x00000001 => Some("Good - Clamped"),
         0x00000002 => Some("Good - More Data"),
@@ -14,7 +14,7 @@ pub fn translate_status_code(code: u32) -> String {
         0x00000005 => Some("Good - Call Again"),
         0x00000006 => Some("Good - No Data"),
         
-        // Uncertain status codes
+        
         0x40000000 => Some("Uncertain"),
         0x40010000 => Some("Uncertain - Initial Value"),
         0x40020000 => Some("Uncertain - Sensor Calibration"),
@@ -23,7 +23,7 @@ pub fn translate_status_code(code: u32) -> String {
         0x40050000 => Some("Uncertain - Last Usable Value"),
         0x40A50000 => Some("Uncertain - Data Sub Normal"),
         
-        // Bad status codes
+        
         0x80000000 => Some("Bad - Unexpected Error"),
         0x80010000 => Some("Bad - Internal Error"),
         0x80020000 => Some("Bad - Out Of Memory"),
@@ -137,7 +137,7 @@ pub fn translate_status_code(code: u32) -> String {
         return m.to_string();
     }
     
-    // Determine severity from high bits
+    
     let severity = match code >> 30 {
         0 => "Good",
         1 => "Uncertain",
@@ -151,9 +151,9 @@ pub fn translate_status_code(code: u32) -> String {
 #[allow(dead_code)]
 pub fn status_code_color(code: u32) -> [u8; 3] {
     match code >> 30 {
-        0 => [0, 200, 0],       // Good - Green
-        1 => [255, 200, 0],     // Uncertain - Yellow
-        _ => [255, 50, 50],     // Bad - Red
+        0 => [0, 200, 0],       
+        1 => [255, 200, 0],     
+        _ => [255, 50, 50],     
     }
 }
 

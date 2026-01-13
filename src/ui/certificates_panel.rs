@@ -1,45 +1,45 @@
-//! Certificates Panel UI
-//!
-//! Provides certificate management view: client cert, trusted, and rejected lists.
+
+
+
 
 use eframe::egui;
 use std::path::PathBuf;
 use crate::opcua::certificates::{CertificateManager, CertificateInfo};
 use crate::utils::i18n::{self, T, Language};
 
-/// Actions from the certificates panel
+
 #[derive(Debug)]
 pub enum CertAction {
-    /// Trust a rejected certificate (move to trusted)
+    
     TrustCert(PathBuf),
-    /// Delete a certificate
+    
     DeleteCert(PathBuf),
-    /// Open the PKI folder in explorer
+    
     OpenPkiFolder,
-    /// Refresh certificate lists
+    
     Refresh,
 }
 
-/// State for the certificates panel
+
 pub struct CertificatesPanel {
-    /// Certificate manager
+    
     cert_manager: CertificateManager,
-    /// Client certificate info
+    
     client_cert: Option<CertificateInfo>,
-    /// Trusted certificates
+    
     trusted_certs: Vec<CertificateInfo>,
-    /// Rejected certificates
+    
     rejected_certs: Vec<CertificateInfo>,
-    /// Status message
+    
     status: String,
-    /// Needs refresh
+    
     needs_refresh: bool,
 }
 
 impl Default for CertificatesPanel {
     fn default() -> Self {
         let cert_manager = CertificateManager::default();
-        // Ensure PKI structure exists
+        
         let _ = cert_manager.ensure_pki_structure();
         
         let mut panel = Self {
@@ -56,7 +56,7 @@ impl Default for CertificatesPanel {
 }
 
 impl CertificatesPanel {
-    /// Refresh certificate lists from disk
+    
     pub fn refresh(&mut self) {
         self.client_cert = self.cert_manager.get_client_cert();
         self.trusted_certs = self.cert_manager.list_trusted_certs();
@@ -64,7 +64,7 @@ impl CertificatesPanel {
         self.needs_refresh = false;
     }
 
-    /// Handle an action result
+    
     pub fn handle_action(&mut self, action: &CertAction) {
         match action {
             CertAction::TrustCert(path) => {
@@ -104,14 +104,14 @@ impl CertificatesPanel {
         }
     }
 
-    /// Show the panel
+    
     pub fn show(&mut self, ui: &mut egui::Ui, lang: Language) -> Option<CertAction> {
         let mut action = None;
 
         ui.heading(format!("🔐 {}", i18n::t(T::Certificates, lang)));
         ui.separator();
 
-        // Toolbar
+        
         ui.horizontal(|ui| {
             if ui.button(format!("📂 {}", i18n::t(T::OpenPkiFolder, lang))).clicked() {
                 action = Some(CertAction::OpenPkiFolder);
@@ -127,7 +127,7 @@ impl CertificatesPanel {
 
         ui.add_space(10.0);
 
-        // Client Certificate section
+        
         egui::CollapsingHeader::new(format!("📄 {}", i18n::t(T::ClientCertificate, lang)))
             .default_open(true)
             .show(ui, |ui| {
@@ -148,7 +148,7 @@ impl CertificatesPanel {
 
         ui.add_space(5.0);
 
-        // Trusted Certificates section
+        
         egui::CollapsingHeader::new(format!("✅ {} ({})", i18n::t(T::TrustedCerts, lang), self.trusted_certs.len()))
             .default_open(true)
             .show(ui, |ui| {
@@ -178,7 +178,7 @@ impl CertificatesPanel {
 
         ui.add_space(5.0);
 
-        // Rejected Certificates section
+        
         egui::CollapsingHeader::new(format!("❌ {} ({})", i18n::t(T::RejectedCerts, lang), self.rejected_certs.len()))
             .default_open(true)
             .show(ui, |ui| {

@@ -1,6 +1,6 @@
-//! Crawler Panel UI
-//!
-//! Provides configuration and results view for the network crawler.
+
+
+
 
 use eframe::egui;
 use opcua::types::NodeId;
@@ -8,7 +8,7 @@ use crate::opcua::browser::BrowsedNode;
 use crate::opcua::crawler::CrawlConfig;
 use crate::utils::i18n::{self, T, Language};
 
-/// Actions from the crawler panel
+
 pub enum CrawlerAction {
     StartCrawl(CrawlConfig),
     ExportJson,
@@ -17,17 +17,17 @@ pub enum CrawlerAction {
     JumpToNode(NodeId),
 }
 
-/// State for the crawler panel
+
 pub struct CrawlerPanel {
-    /// Configuration
+    
     pub config: CrawlConfig,
-    /// Results of the last crawl
+    
     pub results: Vec<BrowsedNode>,
-    /// Is a crawl in progress?
+    
     pub is_crawling: bool,
-    /// Status message
+    
     pub status: String,
-    /// Start time of the crawl
+    
     pub start_time: Option<std::time::Instant>,
 }
 
@@ -36,7 +36,7 @@ impl Default for CrawlerPanel {
         Self {
             config: CrawlConfig {
                 max_depth: 5,
-                max_nodes: 500_000, // Allow large values internally
+                max_nodes: 500_000, 
                 start_node: NodeId::from(opcua::types::ObjectId::RootFolder),
             },
             results: Vec::new(),
@@ -48,7 +48,7 @@ impl Default for CrawlerPanel {
 }
 
 impl CrawlerPanel {
-    /// Show the panel
+    
     pub fn show(&mut self, ui: &mut egui::Ui, is_connected: bool, lang: Language) -> Option<CrawlerAction> {
         let mut action = None;
 
@@ -61,7 +61,7 @@ impl CrawlerPanel {
             return None;
         }
 
-        // Configuration - simplified (only depth and start node)
+        
         ui.group(|ui| {
             ui.label(i18n::t(T::Configuration, lang));
             ui.horizontal(|ui| {
@@ -70,12 +70,12 @@ impl CrawlerPanel {
             });
 
             ui.add(egui::Slider::new(&mut self.config.max_depth, 1..=10).text(i18n::t(T::MaxDepth, lang)));
-            // Max nodes slider removed - uses internal default of 500k
+            
         });
 
         ui.add_space(5.0);
 
-        // Actions
+        
         ui.horizontal(|ui| {
             if self.is_crawling {
                 ui.add(egui::Spinner::new());
@@ -96,7 +96,7 @@ impl CrawlerPanel {
 
         ui.separator();
 
-        // Results - simplified message and export buttons only
+        
         if !self.results.is_empty() {
             ui.vertical(|ui| {
                 ui.colored_label(
