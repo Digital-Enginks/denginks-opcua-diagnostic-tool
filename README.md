@@ -9,7 +9,7 @@ Welcome to **DENGINKS OPC-UA Diagnostic Tool**! 🚀
 
 A lightweight, portable, **read-only** OPC-UA Client designed for diagnostics, structural exporting, and data monitoring without the risk of accidentally modifying server data.
 
-![Aesthetic Dashboard](https://raw.githubusercontent.com/Digital-Enginks/denginks-opcua-diagnostic-tool/main/assets/screenshot.png)
+![Application running screenshot](https://raw.githubusercontent.com/Digital-Enginks/denginks-opcua-diagnostic-tool/refs/heads/master/assets/screenshot.png)
 
 ## Features
 
