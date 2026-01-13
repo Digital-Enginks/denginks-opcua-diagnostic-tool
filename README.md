@@ -24,6 +24,9 @@ A lightweight, portable, **read-only** OPC-UA Client designed for diagnostics, s
 - 🌍 **Multi-language**: Full support for English and Spanish.
 - 🎒 **Portable**: Single executable with file-based bookmark management.
 
+## Killer Features
+- **Structural Export**: Just right-click any folder in Explorer when connected and fast-export it to CSV or JSON. If you want something custom, then go to main navigation bar -> View -> Crawler
+
 ## Installation & Compatibility
 
 ### Windows (Primary Support) 🪟
