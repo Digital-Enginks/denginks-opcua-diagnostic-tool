@@ -1,0 +1,6 @@
+/target
+/denginks_opcua_emulator/node_modules
+/dist
+/art
+/pki
+.vscode

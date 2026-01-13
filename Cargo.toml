@@ -1,0 +1,52 @@
+[package]
+name = "denginks-opcua-diagnostic"
+version = "0.1.0"
+edition = "2021"
+authors = ["Digital Enginks"]
+description = "Read-only OPC-UA diagnostic and monitoring tool"
+license = "MIT OR Apache-2.0"
+rust-version = "1.75"
+
+[dependencies]
+# GUI Framework
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "wgpu", "glow", "wayland", "x11"] }
+egui = "0.31"
+egui_extras = { version = "0.31", features = ["all_loaders"] }
+egui_plot = "0.31"
+
+# Async Runtime
+tokio = { version = "1.43", features = ["full"] }
+
+# OPC-UA Client (async - actively maintained)
+async-opcua = { version = "0.17", features = ["client"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+csv = "1.3"
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rfd = "0.15"
+arboard = "3.4"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "2.0"
+tracing-appender = "0.2.4"
+async-recursion = "1.1.1"
+tokio-util = "0.7"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+
+# Windows specific - for icon embedding later
+[package.metadata.winres]
