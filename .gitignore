@@ -4,4 +4,6 @@
 /art
 /pki
 .vscode
+diagnostic.log
 diagnostics.log
+proposition.md
