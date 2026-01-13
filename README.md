@@ -70,7 +70,7 @@ This will:
 ### Manual Build
 
 ```powershell
-git clone https://github.com/DigitalEnginks/opcua-diagnostic-tool.git
+git clone https://github.com/Digital-Enginks/denginks-opcua-diagnostic-tool.git
 cd opcua-diagnostic-tool
 cargo build --release
 ```
